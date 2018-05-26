@@ -76,19 +76,44 @@ class ReflexAgent(Agent):
         minDistancia = 10000000
         flaj = False
         posicionPacman = successorGameState.getPacmanPosition()
+        posicionPacmanAntes = currentGameState.getPacmanPosition()
+        capsulas = successorGameState.getCapsules()
+
         for estado in newGhostStates:
             posicionFantasma = estado.getPosition()
             if estado.scaredTimer == 0 and (posicionFantasma[0] == posicionPacman[0] or posicionFantasma[1] == posicionPacman[1]):
                 flaj = True
 
-        posicionesComida = currentGameState.getFood().asList()
-        for posicionComida in posicionesComida:
-            distancia = manhattanDistance(posicionComida, posicionPacman)
+        if not flaj:
+            for estado in newGhostStates:
+                posicionFantasma = estado.getPosition()
+                if estado.scaredTimer > 0 and (manhattanDistance(posicionPacman,posicionFantasma) < manhattanDistance(posicionPacmanAntes, posicionFantasma)):
+                    return -100000
+
+        flaj2 = False
+        minDistancia = minDistancia
+        for posicionCapsula in capsulas:
+            distancia = manhattanDistance(posicionCapsula, posicionPacman)
+            print distancia
+            if distancia == 0: return -100000
             if (distancia < minDistancia):
                 if (flaj):
-                    minDistancia = 10000000 + distancia
+                    minDistancia = 10000000 + (distancia*-1)
                 else:
                     minDistancia = distancia
+            flaj2 = True
+
+        if not flaj2:
+            posicionesComida = currentGameState.getFood().asList()
+            for posicionComida in posicionesComida:
+                distancia = manhattanDistance(posicionComida, posicionPacman)
+                if (distancia < minDistancia):
+                    if (flaj):
+                        minDistancia = 10000000 + distancia
+                    else:
+                        minDistancia = distancia
+
+
         return minDistancia
 
 def scoreEvaluationFunction(currentGameState):
