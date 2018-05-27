@@ -74,45 +74,22 @@ class ReflexAgent(Agent):
 
         "*** YOUR CODE HERE ***"
         minDistancia = 10000000
-        flaj = False
+        peligro = False
         posicionPacman = successorGameState.getPacmanPosition()
-        posicionPacmanAntes = currentGameState.getPacmanPosition()
-        capsulas = successorGameState.getCapsules()
 
         for estado in newGhostStates:
             posicionFantasma = estado.getPosition()
             if estado.scaredTimer == 0 and (posicionFantasma[0] == posicionPacman[0] or posicionFantasma[1] == posicionPacman[1]):
-                flaj = True
+                peligro = True
 
-        if not flaj:
-            for estado in newGhostStates:
-                posicionFantasma = estado.getPosition()
-                if estado.scaredTimer > 0 and (manhattanDistance(posicionPacman,posicionFantasma) < manhattanDistance(posicionPacmanAntes, posicionFantasma)):
-                    return -100000
-
-        flaj2 = False
-        minDistancia = minDistancia
-        for posicionCapsula in capsulas:
-            distancia = manhattanDistance(posicionCapsula, posicionPacman)
-            print distancia
-            if distancia == 0: return -100000
+        posicionesComida = currentGameState.getFood().asList()
+        for posicionComida in posicionesComida:
+            distancia = manhattanDistance(posicionComida, posicionPacman)
             if (distancia < minDistancia):
-                if (flaj):
-                    minDistancia = 10000000 + (distancia*-1)
+                if (peligro):
+                    minDistancia = 10000000 + distancia
                 else:
                     minDistancia = distancia
-            flaj2 = True
-
-        if not flaj2:
-            posicionesComida = currentGameState.getFood().asList()
-            for posicionComida in posicionesComida:
-                distancia = manhattanDistance(posicionComida, posicionPacman)
-                if (distancia < minDistancia):
-                    if (flaj):
-                        minDistancia = 10000000 + distancia
-                    else:
-                        minDistancia = distancia
-
 
         return minDistancia
 
@@ -169,7 +146,45 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def evaluarNodo(estado, agente, nivel):
+            if estado.isWin() or estado.isLose() or nivel == self.depth:
+                return self.evaluationFunction(estado)
+            if agente == 0:
+                accionMinimax = ''
+                valorMinimax = -1000000000
+                accionesPacman = estado.getLegalActions(0)
+                for accion in accionesPacman:
+                    nuevoValor = evaluarNodo(estado.generateSuccessor(0, accion), 1, nivel)
+                    if (nuevoValor > valorMinimax):
+                        accionMinimax = accion
+                        valorMinimax = nuevoValor
+                return valorMinimax
+            else:
+                accionMinimax = ''
+                valorMinimax = 1000000000
+                accionesFantasma = estado.getLegalActions(agente)
+                for accion in accionesFantasma:
+                    if agente + 1 < estado.getNumAgents():
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), agente + 1, nivel)
+                    else:
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), 0, nivel + 1)
+                    if (nuevoValor < valorMinimax):
+                        accionMinimax = accion
+                        valorMinimax = nuevoValor
+                return valorMinimax
+
+        accionMinimax = ''
+        valorMinimax = -1000000000
+        accionesPacman = gameState.getLegalActions(0)
+        for accion in accionesPacman:
+            nuevoValor = evaluarNodo(gameState.generateSuccessor(0, accion), 1, 0)
+            if (nuevoValor > valorMinimax):
+                accionMinimax = accion
+                valorMinimax = nuevoValor
+        return accionMinimax
+
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
