@@ -1,0 +1,1 @@
+python2 autograder.py -q q4 --no-graphics

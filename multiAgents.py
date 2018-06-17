@@ -257,7 +257,44 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def evaluarNodo(estado, agente, nivel):
+            if estado.isWin() or estado.isLose() or nivel == self.depth:
+                return self.evaluationFunction(estado)
+            if agente == 0:
+                accionExpectimax = ''
+                valorExpectimax = -1000000000
+                accionesPacman = estado.getLegalActions(0)
+                for accion in accionesPacman:
+                    nuevoValor = evaluarNodo(estado.generateSuccessor(0, accion), 1, nivel)
+                    if (nuevoValor > valorExpectimax):
+                        accionExpectimax = accion
+                        valorExpectimax = nuevoValor
+                return valorExpectimax
+            else:
+                accionExpectimax = ''
+                valorExpectimax = 0
+                accionesFantasma = estado.getLegalActions(agente)
+                probabilidad = 1.0/len(accionesFantasma)
+                for accion in accionesFantasma:
+                    if agente + 1 < estado.getNumAgents():
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), agente + 1, nivel)
+                    else:
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), 0, nivel + 1)
+                    accionExpectimax = accion
+                    valorExpectimax = valorExpectimax + nuevoValor * probabilidad
+
+                return valorExpectimax
+
+        accionExpectimax = ''
+        valorExpectimax = -1000000000
+        accionesPacman = gameState.getLegalActions(0)
+        for accion in accionesPacman:
+            nuevoValor = evaluarNodo(gameState.generateSuccessor(0, accion), 1, 0)
+            if (nuevoValor > valorExpectimax):
+                accionExpectimax = accion
+                valorExpectimax = nuevoValor
+        return accionExpectimax
+
 
 def betterEvaluationFunction(currentGameState):
     """
