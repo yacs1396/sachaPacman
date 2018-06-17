@@ -196,7 +196,53 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def evaluarNodo(estado, agente, nivel, alfa, beta):
+            if estado.isWin() or estado.isLose() or nivel == self.depth:
+                return self.evaluationFunction(estado)
+            if agente == 0:
+                accionMinimax = ''
+                valorMinimax = -1000000000
+                accionesPacman = estado.getLegalActions(0)
+                for accion in accionesPacman:
+                    nuevoValor = evaluarNodo(estado.generateSuccessor(0, accion), 1, nivel, alfa, beta)
+                    if (nuevoValor > valorMinimax):
+                        accionMinimax = accion
+                        valorMinimax = nuevoValor
+                    if (nuevoValor > beta):
+                        return nuevoValor
+                    alfa = max(alfa, nuevoValor)
+                return valorMinimax
+            else:
+                accionMinimax = ''
+                valorMinimax = 1000000000
+                accionesFantasma = estado.getLegalActions(agente)
+                for accion in accionesFantasma:
+                    if agente + 1 < estado.getNumAgents():
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), agente + 1, nivel, alfa, beta)
+                    else:
+                        nuevoValor = evaluarNodo(estado.generateSuccessor(agente, accion), 0, nivel + 1, alfa, beta)
+                    if (nuevoValor < valorMinimax):
+                        accionMinimax = accion
+                        valorMinimax = nuevoValor
+                    if (nuevoValor < alfa):
+                        return nuevoValor
+                    beta = min(beta, nuevoValor)
+                return valorMinimax
+
+        accionMinimax = ''
+        valorMinimax = -1000000000
+        accionesPacman = gameState.getLegalActions(0)
+        alfa = -1000000000
+        beta = 1000000000
+        for accion in accionesPacman:
+            nuevoValor = evaluarNodo(gameState.generateSuccessor(0, accion), 1, 0, alfa, beta)
+            if (nuevoValor > valorMinimax):
+                accionMinimax = accion
+                valorMinimax = nuevoValor
+            if (nuevoValor > beta):
+                return accion
+            alfa = max(alfa, nuevoValor)
+        return accionMinimax
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
